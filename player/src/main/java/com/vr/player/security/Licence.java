@@ -60,13 +60,6 @@ public class Licence {
     private String getAndroidId() {
         TelephonyManager tm = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
         String androidId = tm.getDeviceId();
-        //if(androidId == null){
-            //WifiManager wifi = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
-            //WifiInfo info = wifi.getConnectionInfo();
-            //androidId = info.getMacAddress();
-        //L.d(TAG, ""+info.getMacAddress());
-        //L.d(TAG, ""+androidId);
-        //}
         if(androidId == null){
             androidId = "2222222222222222";
         }
@@ -84,16 +77,9 @@ public class Licence {
     }
 
     public void setLicence(Listener listener) {
-        setHardId(DataManager.getHardId());
-        String result1 = DataManager.getResult1();
-        String result2 = DataManager.getResult2();
         addListener(listener);
-        if (result1 != null && result2 != null) {
-            if (mNativeApi.aesDecode(getHardId(), getAndroidId(), result1, result2)) {
-                listenerOnSuccess();
-            } else {
-                listenerOnHardIDError();
-            }
+        if (mNativeApi.hasLicence()) {
+            listenerOnSuccess();
         } else {
             listenerOnHardIDError();
         }
@@ -247,6 +233,7 @@ public class Licence {
                         listenerOnHardIDError();
                     }
                 } else {
+                    mNativeApi.aesDecode("", "", "", "");
                     listenerOnHardIDError();
                 }
             }

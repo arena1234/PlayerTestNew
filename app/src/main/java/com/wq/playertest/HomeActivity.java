@@ -59,6 +59,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     private void showDialog(){
         final EditText et = new EditText(this);
         et.setInputType(InputType.TYPE_CLASS_PHONE);
+        et.setText("6666661111111111");
 
         new AlertDialog.Builder(this).setTitle("请输入Licence")
             .setIcon(android.R.drawable.ic_dialog_info)

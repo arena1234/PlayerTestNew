@@ -10,7 +10,6 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)
 NDK_APP_DST_DIR := ../jniLibs/$(TARGET_ARCH_ABI)
 
 LOCAL_SRC_FILES :=  com_vr_player_ndk_NativeApi.c   \
-                    aes/box.c                       \
                     aes/aes.c                       \
                     map/map_t_original.c            \
                     map/map_t_down.c                \

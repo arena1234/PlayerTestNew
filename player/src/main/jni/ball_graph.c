@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <jni.h>
 #include "ball_graph.h"
 #include "aes/aes.h"
@@ -68,8 +67,10 @@ jboolean aesDecode(JNIEnv *env, jstring str1, jstring str2, jstring r1, jstring 
     const char *result2 = (*env)->GetStringUTFChars(env, r2, &isCopy);
     if(InvCipher_server(hardId, androidId, result1, result2) == 0){
         isHaveLicence = JNI_TRUE;
+        LOGD("licence is ok");
     } else {
         isHaveLicence = JNI_FALSE;
+        LOGD("licence is error");
     }
     return isHaveLicence;
 }
