@@ -1,0 +1,6 @@
+<resources>
+    <dimen name="padding_activity_player_horizontal">0dp</dimen>
+    <dimen name="padding_activity_player_vertical">0dp</dimen>
+    <dimen name="player_ctrl_offset_to_center_left">20dp</dimen>
+    <dimen name="player_ctrl_offset_to_center_right">-20dp</dimen>
+</resources>

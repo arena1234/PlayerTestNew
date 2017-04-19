@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/img_index_bg"
+        android:layout_width="360dp"
+        android:layout_height="338dp"
+        android:layout_centerHorizontal="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_index_bg"/>
+
+    <Button
+        android:id="@+id/btn_settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_title"
+        android:layout_alignLeft="@+id/img_index_bg"
+        android:layout_alignStart="@+id/img_index_bg"
+        android:layout_marginTop="16dp"
+        android:textColor="@android:color/white"
+        android:background="@null"/>
+
+    <LinearLayout
+        android:id="@+id/description"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:layout_below="@+id/img_index_bg"
+        android:layout_marginTop="-20dp"
+        android:background="@drawable/ic_index_des"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:background="@null"
+            android:text="@string/index_description"
+            android:textColor="#666666"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="5dp"
+            android:background="@null"
+            android:text="@string/index_description_all"
+            android:textColor="#999999"
+            android:textSize="14sp"/>
+    </LinearLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/description"
+        android:layout_centerHorizontal="true"
+        android:gravity="center">
+        <ImageView
+            android:id="@+id/img_video_scan_bg"
+            android:layout_width="358dp"
+            android:layout_height="100dp"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/ic_index_vr_player"/>
+
+        <TextView
+            android:id="@+id/btn_video_list"
+            android:layout_width="358dp"
+            android:layout_height="70dp"
+            android:layout_alignTop="@+id/img_video_scan_bg"
+            android:layout_centerHorizontal="true"
+            android:background="@null"
+            android:gravity="center"
+            android:text="@string/index_video_list"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:clickable="true"/>
+
+        <ImageView
+            android:id="@+id/img_video_ctrl_bg"
+            android:layout_width="358dp"
+            android:layout_height="100dp"
+            android:layout_below="@id/img_video_scan_bg"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="-20dp"
+            android:background="@drawable/ic_index_controller"
+            android:visibility="gone"/>
+        <TextView
+            android:id="@+id/btn_video_list_other"
+            android:layout_width="358dp"
+            android:layout_height="75dp"
+            android:layout_alignTop="@id/img_video_ctrl_bg"
+            android:layout_centerHorizontal="true"
+            android:background="@null"
+            android:gravity="center"
+            android:text="@string/index_video_list_other"
+            android:textColor="#4183D7"
+            android:textSize="16sp"
+            android:clickable="true"
+            android:visibility="gone"/>
+    </RelativeLayout>
+</RelativeLayout>

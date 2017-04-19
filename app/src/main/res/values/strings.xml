@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">PlayerTest</string>
+    <string name="index_description">Description</string>
+    <string name="index_description_all">Enjoy the beauty of VR Cinema . You could easily use your another phone or watch as the X-remote control for better use experience .</string>
+    <string name="index_video_list_other">Video List(Jump other app)</string>
+    <string name="index_video_list">Video List(/Movies/vr_video/)</string>
+    <string name="index_title_1">VR CINEMA</string>
+    <string name="index_title_2">—X REMOTE CONTROL—</string>
+
+    <string name="volume_up">Vol+</string>
+    <string name="volume_down">Vol-</string>
+    <string name="zoom_out">Zoom+</string>
+    <string name="zoom_in">Zoom-</string>
+
+    <string name="settings_title">设置Licence</string>
+    <string name="input_video_uri">请输入网址</string>
+    <string name="use_bitmap">使用图片</string>
+</resources>
