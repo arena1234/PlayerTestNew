@@ -1,6 +1,6 @@
 #include <jni.h>
 #include "ball_graph.h"
-#include "aes/aes.h"
+#include "aes/licence.h"
 #include "native_log.h"
 
 GLint mTextureId = -1;
@@ -51,26 +51,24 @@ void onDrawFrame(GLfloat degreeX, GLfloat degreeY, GLfloat degreeZ, GLfloat fov,
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-jstring aesEncode(JNIEnv *env, jstring str) {
+jstring aesEncode(JNIEnv *env, jstring id) {
     jboolean isCopy;
-    const char *id = (*env)->GetStringUTFChars(env, str, &isCopy);
+    const char *str = env->GetStringUTFChars(id, &isCopy);
     char ciphertext_0[128] = {0};
-    encode(id, ciphertext_0);
-    return (*env)->NewStringUTF(env, ciphertext_0);
+    encode(str, ciphertext_0);
+    return env->NewStringUTF(ciphertext_0);
 }
 
 jboolean aesDecode(JNIEnv *env, jstring str1, jstring str2, jstring r1, jstring r2) {
-    jboolean isCopy;
-    const char *hardId = (*env)->GetStringUTFChars(env, str1, &isCopy);
-    const char *androidId = (*env)->GetStringUTFChars(env, str2, &isCopy);
-    const char *result1 = (*env)->GetStringUTFChars(env, r1, &isCopy);
-    const char *result2 = (*env)->GetStringUTFChars(env, r2, &isCopy);
-    if(InvCipher_server(hardId, androidId, result1, result2) == 0){
-        isHaveLicence = JNI_TRUE;
-        LOGD("licence is ok");
-    } else {
+    if(str1 != NULL && str2 != NULL && r1 != NULL && r2 != NULL) {
+        jboolean isCopy;
+        const char *hardId = env->GetStringUTFChars(str1, &isCopy);
+        const char *androidId = env->GetStringUTFChars(str2, &isCopy);
+        const char *result1 = env->GetStringUTFChars(r1, &isCopy);
+        const char *result2 = env->GetStringUTFChars(r2, &isCopy);
+        isHaveLicence = isAllow(hardId, androidId, result1, result2);
+    } else{
         isHaveLicence = JNI_FALSE;
-        LOGD("licence is error");
     }
     return isHaveLicence;
 }

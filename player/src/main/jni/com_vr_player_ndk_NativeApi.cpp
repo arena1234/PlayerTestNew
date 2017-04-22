@@ -1,6 +1,6 @@
 #include "com_vr_player_ndk_NativeApi.h"
 #include "ball_graph.h"
-
+extern "C" {
 jboolean isSinglePicture = JNI_FALSE;
 
 jboolean JNICALL Java_com_vr_player_ndk_NativeApi_nativeSetShowMode
@@ -74,3 +74,4 @@ void JNICALL Java_com_vr_player_ndk_NativeApi_nativeResetDegree
         (JNIEnv *env, jobject thiz) {
     return resetDegree();
 }
+};

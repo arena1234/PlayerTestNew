@@ -78,7 +78,16 @@ public class Licence {
 
     public void setLicence(Listener listener) {
         addListener(listener);
-        if (mNativeApi.hasLicence()) {
+        /*if (mNativeApi.hasLicence()) {
+            listenerOnSuccess();
+        } else {
+            listenerOnHardIDError();
+        }*/
+        if (mNativeApi.aesDecode(
+                DataManager.getHardId(),
+                getAndroidId(),
+                DataManager.getResult1(),
+                DataManager.getResult2())) {
             listenerOnSuccess();
         } else {
             listenerOnHardIDError();
