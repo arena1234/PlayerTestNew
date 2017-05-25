@@ -95,4 +95,8 @@ public class MoveManager implements OnMoveStateChangeListener {
         mDeltaFov = 0;
         //L.d(TAG, "onClear");
     }
+
+    public void setFps(float fps){
+        if(mTouchCtrl != null) mTouchCtrl.setFps(fps);
+    }
 }

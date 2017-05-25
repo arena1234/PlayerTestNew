@@ -164,8 +164,10 @@ public class VideoView extends GLSurfaceView implements ISettings {
             long currTime = System.currentTimeMillis();
             if (currTime - lastTime >= 5000) {
                 lastTime = currTime;
-                L.d(TAG, "fps=" + (fpsCount * 0.2f));
+                float fps = (fpsCount * 0.2f);
+                L.d(TAG, "fps=" + fps);
                 fpsCount = 0;
+                mMoveManager.setFps(fps);
             }
         }
     }

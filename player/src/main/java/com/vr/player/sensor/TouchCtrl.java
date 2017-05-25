@@ -1,7 +1,10 @@
 package com.vr.player.sensor;
 
 import android.graphics.PointF;
+import android.os.Handler;
+import android.os.Message;
 import android.view.MotionEvent;
+import android.view.VelocityTracker;
 
 import com.vr.player.L;
 import com.vr.player.Utils;
@@ -25,7 +28,9 @@ public class TouchCtrl {
     private NativeApi mNativeApi;
     private float mMoveRateWithZoom = 1.0f;
     private float mDefaultFov = 90;
-    private float deltaX, deltaY, deltaZ;
+    private float mDeltaX, mDeltaY;
+    private VelocityTracker mVelocityTracker;
+    private float mFps = 30;
 
     public TouchCtrl(ISettings settings) {
         mSettings = settings;
@@ -36,6 +41,7 @@ public class TouchCtrl {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+                removeMsg();
                 // 仅支持单指拖拽
                 if (event.getPointerCount() == 1 &&
                         (mSettings.getSettingsManager().getCtrlStyle() == CtrlStyle.CS_DRAG ||
@@ -43,9 +49,14 @@ public class TouchCtrl {
                     mMode = MODE_DRAG;
                     mStartPoint.set(event.getX(), event.getY());
                     mLastTime = System.currentTimeMillis();
+                    if(mVelocityTracker == null){
+                        mVelocityTracker = VelocityTracker.obtain();
+                        mVelocityTracker.addMovement(event);
+                    }
                 }
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
+                removeMsg();
                 // 仅支持两指缩放
                 if (event.getPointerCount() == 2 &&
                         mSettings.getSettingsManager().getCtrlStyle() == CtrlStyle.CS_DRAG_ZOOM) {
@@ -60,8 +71,17 @@ public class TouchCtrl {
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
+                if(mVelocityTracker != null){
+                    mVelocityTracker.recycle();
+                    mVelocityTracker = null;
+                }
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
+                if(mVelocityTracker != null && mMode == MODE_DRAG){
+                    mVelocityTracker.computeCurrentVelocity(1000);
+                    fling(event.getX(), event.getY(),
+                            mVelocityTracker.getXVelocity(), mVelocityTracker.getYVelocity());
+                }
                 mMode = MODE_NORMAL;
                 if(mMoveStateChangeListener != null){
                     mMoveStateChangeListener.onClear();
@@ -75,6 +95,7 @@ public class TouchCtrl {
                     long time = System.currentTimeMillis();
                     setDrag(event, time - mLastTime);
                     mLastTime = time;
+                    if(mVelocityTracker != null) mVelocityTracker.addMovement(event);
                 } else if (mMode == MODE_ZOOM) {
                     setZoom(event);
                 }
@@ -117,6 +138,7 @@ public class TouchCtrl {
         dy = dy * spanTime * 2;
 
         if (mSettings.getSettingsManager().getCtrlStyle() == CtrlStyle.CS_DRAG) {
+            float deltaZ;
             if (Math.abs(dx) > Math.abs(dy)) {
                 deltaZ = (float) Math.toDegrees(dx);
             } else {
@@ -128,14 +150,14 @@ public class TouchCtrl {
             }
         } else {
             if (Math.abs(dx) > Math.abs(dy)) {
-                deltaX = -(float) Math.toDegrees(dx);
+                float deltaX = -(float) Math.toDegrees(dx);
 
                 deltaX *= mMoveRateWithZoom;
                 if (mMoveStateChangeListener != null) {
                     mMoveStateChangeListener.onMoveStateChanged(deltaX, 0, 0, 0);
                 }
             } else {
-                deltaY = (float) Math.toDegrees(dy);
+                float deltaY = (float) Math.toDegrees(dy);
 
                 deltaY *= mMoveRateWithZoom;
                 if (mMoveStateChangeListener != null) {
@@ -177,5 +199,65 @@ public class TouchCtrl {
 
     public void setOnMoveStateChangeListener(OnMoveStateChangeListener listener) {
         mMoveStateChangeListener = listener;
+    }
+
+    public void setFps(float fps){
+        mFps = fps;
+    }
+
+    private static final float DEGREE_PER_1000PX = 6f;
+    private void fling(float endX, float endY, float vx, float vy){
+        float deltaX = endX - mStartPoint.x;
+        float deltaY = endY - mStartPoint.y;
+        if(Math.abs(deltaX) < vx) vx = deltaX;
+        if(Math.abs(deltaY) < vy) vy = deltaY;
+        float absVx = Math.abs(vx);
+        float absVy = Math.abs(vy);
+        if(absVx > absVy){
+            mDeltaX = -vx * DEGREE_PER_1000PX / 1000;
+            mDeltaY = 0;
+        } else {
+            mDeltaX = 0;
+            mDeltaY = vy * DEGREE_PER_1000PX / 1000;
+        }
+
+        if(mDeltaX != 0 || mDeltaY != 0){
+            animOver();
+        }
+    }
+
+    private static final float MIN = 0.3f;
+    private float step = 0.1f;
+    private Handler mAnimOver = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if(Math.abs(mDeltaX) > MIN) {
+                mDeltaX -= mDeltaX > 0 ? step : -step;
+                mDeltaY = 0;
+                if(mMoveStateChangeListener != null){
+                    mMoveStateChangeListener.onMoveStateChanged(mDeltaX, 0, 0, 0);
+                }
+                animOver();
+            } else if(Math.abs(mDeltaY) > MIN){
+                mDeltaX = 0;
+                mDeltaY -= mDeltaY > 0? step : -step;
+                if(mMoveStateChangeListener != null){
+                    mMoveStateChangeListener.onMoveStateChanged(0, mDeltaY, 0, 0);
+                }
+                animOver();
+            } else {
+                removeMsg();
+                if(mMoveStateChangeListener != null) mMoveStateChangeListener.onClear();
+            }
+        }
+    };
+
+    private void animOver(){
+        mAnimOver.sendEmptyMessageDelayed(0, (long)(1000f / mFps));
+    }
+
+    private void removeMsg(){
+        mAnimOver.removeMessages(0);
     }
 }
