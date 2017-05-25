@@ -263,8 +263,6 @@ public class VideoLayout extends LinearLayout implements PlayManager.Listener {
     @Override
     public void onFrameUpdate() {
         //L.d(TAG, "onFrameUpdate");
-        mLeftSurfaceView.requestRender();
-        mRightSurfaceView.requestRender();
         if (mPlayerListener != null) mPlayerListener.onFrameUpdate();
     }
 
@@ -277,12 +275,14 @@ public class VideoLayout extends LinearLayout implements PlayManager.Listener {
         mPlayManager = new PlayManager();
         isSinglePicture = false;
         removeMSG();
+        setFps(42);
         setPlayState(PlayState.UnPrepare);
         mLeftSurfaceView.initRender(isSinglePicture, null);
         mRightSurfaceView.initRender(isSinglePicture, null);
         mPlayerListener = listener;
         mPlayManager.initMedia(Uri.parse(path), getContext());
         prepare();
+        sendMsg(MSG_DRAW_UPDATE_FRAME, 0);
         L.d(TAG, "setVideoSource path=" + path);
     }
 
@@ -299,7 +299,7 @@ public class VideoLayout extends LinearLayout implements PlayManager.Listener {
         removeMSG();
         mLeftSurfaceView.initRender(isSinglePicture, bitmap);
         mRightSurfaceView.initRender(isSinglePicture, bitmap);
-        //sendMsg(MSG_DRAW_UPDATE_BITMAP, 0);
+        //sendMsg(MSG_DRAW_UPDATE_FRAME, 0);
         L.d(TAG, "setUseBitmap");
 
         prepare();
@@ -460,12 +460,12 @@ public class VideoLayout extends LinearLayout implements PlayManager.Listener {
             mLeftSurfaceView.requestRender();
             mRightSurfaceView.requestRender();
             //removeMSG();
-            //sendMsg(MSG_DRAW_UPDATE_BITMAP, 0);
+            //sendMsg(MSG_DRAW_UPDATE_FRAME, 0);
         }
     }
 
     private static final int MSG_DRAW_PLAYER_PAUSE = 1;
-    private static final int MSG_DRAW_UPDATE_BITMAP = 2;
+    private static final int MSG_DRAW_UPDATE_FRAME = 2;
     private Handler mDelayHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -480,10 +480,10 @@ public class VideoLayout extends LinearLayout implements PlayManager.Listener {
                         removeMSG();
                     }
                     break;
-                case MSG_DRAW_UPDATE_BITMAP:
+                case MSG_DRAW_UPDATE_FRAME:
                     mLeftSurfaceView.requestRender();
                     mRightSurfaceView.requestRender();
-                    sendMsg(MSG_DRAW_UPDATE_BITMAP, mSingleFrameTime);
+                    sendMsg(MSG_DRAW_UPDATE_FRAME, mSingleFrameTime);
                     break;
             }
         }
@@ -496,6 +496,6 @@ public class VideoLayout extends LinearLayout implements PlayManager.Listener {
 
     private void removeMSG() {
         mDelayHandler.removeMessages(MSG_DRAW_PLAYER_PAUSE);
-        mDelayHandler.removeMessages(MSG_DRAW_UPDATE_BITMAP);
+        mDelayHandler.removeMessages(MSG_DRAW_UPDATE_FRAME);
     }
 }

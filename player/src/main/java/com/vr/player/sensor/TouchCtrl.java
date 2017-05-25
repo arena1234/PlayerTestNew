@@ -5,12 +5,9 @@ import android.view.MotionEvent;
 
 import com.vr.player.L;
 import com.vr.player.Utils;
+import com.vr.player.ndk.NativeApi;
 import com.vr.player.settings.ISettings;
 import com.vr.player.settings.SettingsManager.CtrlStyle;
-
-/**
- * Created by arena on 2017/1/5.
- */
 
 public class TouchCtrl {
     private static final String TAG = "VR_TouchCtrl";
@@ -25,9 +22,15 @@ public class TouchCtrl {
     private static final int MODE_DRAG = 2;            // 图片拖动模式
     private static final int MODE_ZOOM = 3;            // 图片缩放模式
     private int mMode = MODE_NORMAL;
+    private NativeApi mNativeApi;
+    private float mMoveRateWithZoom = 1.0f;
+    private float mDefaultFov = 90;
+    private float deltaX, deltaY, deltaZ;
 
     public TouchCtrl(ISettings settings) {
         mSettings = settings;
+        mNativeApi = new NativeApi();
+        mDefaultFov = mNativeApi.getFov(true);
     }
 
     public boolean onTouchEvent(MotionEvent event) {
@@ -36,7 +39,7 @@ public class TouchCtrl {
                 // 仅支持单指拖拽
                 if (event.getPointerCount() == 1 &&
                         (mSettings.getSettingsManager().getCtrlStyle() == CtrlStyle.CS_DRAG ||
-                         mSettings.getSettingsManager().getCtrlStyle() == CtrlStyle.CS_DRAG_ZOOM)) {
+                                mSettings.getSettingsManager().getCtrlStyle() == CtrlStyle.CS_DRAG_ZOOM)) {
                     mMode = MODE_DRAG;
                     mStartPoint.set(event.getX(), event.getY());
                     mLastTime = System.currentTimeMillis();
@@ -60,7 +63,12 @@ public class TouchCtrl {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
                 mMode = MODE_NORMAL;
-                if(mMoveStateChangeListener != null) mMoveStateChangeListener.onClear();
+                if(mMoveStateChangeListener != null){
+                    mMoveStateChangeListener.onClear();
+                }
+                float rate = -0.1f;
+                float currFov = mNativeApi.getFov(true);
+                mMoveRateWithZoom = rate + (currFov / mDefaultFov * (1 - rate));
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (mMode == MODE_DRAG) {
@@ -79,13 +87,13 @@ public class TouchCtrl {
         setZoom(distance(event));
     }
 
-    private void setZoom(float distance){
+    private void setZoom(float distance) {
         if (distance == mDistance) return;
         float deltaFov = (distance - mDistance > 0 ? 1 : -1) * distance / mDistance; // 获取将要缩放到比例,一般是1左右
         mDistance = distance;
-
-        if(mMoveStateChangeListener != null) {
-            mMoveStateChangeListener.onMoveStateChanged(0, 0, 0, -deltaFov * 2);
+        deltaFov = -deltaFov * 2;
+        if (mMoveStateChangeListener != null) {
+            mMoveStateChangeListener.onMoveStateChanged(0, 0, 0, deltaFov);
         }
     }
 
@@ -108,28 +116,29 @@ public class TouchCtrl {
         dx = dx * spanTime * 2;
         dy = dy * spanTime * 2;
 
-        if(mSettings.getSettingsManager().getCtrlStyle() == CtrlStyle.CS_DRAG){
-            float deltaZ;
+        if (mSettings.getSettingsManager().getCtrlStyle() == CtrlStyle.CS_DRAG) {
             if (Math.abs(dx) > Math.abs(dy)) {
                 deltaZ = (float) Math.toDegrees(dx);
-            } else{
+            } else {
                 deltaZ = (float) Math.toDegrees(dy);
             }
 
-            if(mMoveStateChangeListener != null) {
+            if (mMoveStateChangeListener != null) {
                 mMoveStateChangeListener.onMoveStateChanged(0, 0, deltaZ, 0);
             }
         } else {
             if (Math.abs(dx) > Math.abs(dy)) {
-                float deltaX = (float) Math.toDegrees(dx);
+                deltaX = -(float) Math.toDegrees(dx);
 
-                if(mMoveStateChangeListener != null) {
-                    mMoveStateChangeListener.onMoveStateChanged(-deltaX, 0, 0, 0);
+                deltaX *= mMoveRateWithZoom;
+                if (mMoveStateChangeListener != null) {
+                    mMoveStateChangeListener.onMoveStateChanged(deltaX, 0, 0, 0);
                 }
             } else {
-                float deltaY = (float) Math.toDegrees(dy);
+                deltaY = (float) Math.toDegrees(dy);
 
-                if(mMoveStateChangeListener != null) {
+                deltaY *= mMoveRateWithZoom;
+                if (mMoveStateChangeListener != null) {
                     mMoveStateChangeListener.onMoveStateChanged(0, deltaY, 0, 0);
                 }
             }
@@ -166,7 +175,7 @@ public class TouchCtrl {
 
     private OnMoveStateChangeListener mMoveStateChangeListener;
 
-    public void setOnMoveStateChangeListener(OnMoveStateChangeListener listener){
+    public void setOnMoveStateChangeListener(OnMoveStateChangeListener listener) {
         mMoveStateChangeListener = listener;
     }
 }
