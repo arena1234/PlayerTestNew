@@ -205,12 +205,12 @@ public class TouchCtrl {
         mFps = fps;
     }
 
-    private static final float DEGREE_PER_1000PX = 6f;
+    private static final float DEGREE_PER_1000PX = 1.2f;
     private void fling(float endX, float endY, float vx, float vy){
         float deltaX = endX - mStartPoint.x;
         float deltaY = endY - mStartPoint.y;
-        if(Math.abs(deltaX) < vx) vx = deltaX;
-        if(Math.abs(deltaY) < vy) vy = deltaY;
+//        if(Math.abs(deltaX) < vx) vx = deltaX;
+//        if(Math.abs(deltaY) < vy) vy = deltaY;
         float absVx = Math.abs(vx);
         float absVy = Math.abs(vy);
         if(absVx > absVy){
@@ -222,12 +222,13 @@ public class TouchCtrl {
         }
 
         if(mDeltaX != 0 || mDeltaY != 0){
+            step = MIN;
             animOver();
         }
     }
 
-    private static final float MIN = 0.3f;
-    private float step = 0.1f;
+    private static final float MIN = 0.2f;
+    private float step = MIN;
     private Handler mAnimOver = new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -235,29 +236,31 @@ public class TouchCtrl {
             if(Math.abs(mDeltaX) > MIN) {
                 mDeltaX -= mDeltaX > 0 ? step : -step;
                 mDeltaY = 0;
-                if(mMoveStateChangeListener != null){
-                    mMoveStateChangeListener.onMoveStateChanged(mDeltaX, 0, 0, 0);
-                }
                 animOver();
             } else if(Math.abs(mDeltaY) > MIN){
                 mDeltaX = 0;
                 mDeltaY -= mDeltaY > 0? step : -step;
-                if(mMoveStateChangeListener != null){
-                    mMoveStateChangeListener.onMoveStateChanged(0, mDeltaY, 0, 0);
-                }
                 animOver();
             } else {
                 removeMsg();
-                if(mMoveStateChangeListener != null) mMoveStateChangeListener.onClear();
             }
         }
     };
 
     private void animOver(){
-        mAnimOver.sendEmptyMessageDelayed(0, (long)(1000f / mFps));
+        step -= 0.002;
+        if(step < MIN / 10) {
+            step += 0.002;
+        }
+        if(mMoveStateChangeListener != null){
+            mMoveStateChangeListener.onMoveStateChanged(mDeltaX, mDeltaY, 0, 0);
+        }
+        mAnimOver.sendEmptyMessageDelayed(0, (long) (1000f / mFps));
     }
 
     private void removeMsg(){
+        step = 0f;
         mAnimOver.removeMessages(0);
+        if(mMoveStateChangeListener != null) mMoveStateChangeListener.onClear();
     }
 }
