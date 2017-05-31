@@ -79,8 +79,7 @@ public class TouchCtrl {
             case MotionEvent.ACTION_POINTER_UP:
                 if(mVelocityTracker != null && mMode == MODE_DRAG){
                     mVelocityTracker.computeCurrentVelocity(1000);
-                    fling(event.getX(), event.getY(),
-                            mVelocityTracker.getXVelocity(), mVelocityTracker.getYVelocity());
+                    fling(mVelocityTracker.getXVelocity(), mVelocityTracker.getYVelocity());
                 }
                 mMode = MODE_NORMAL;
                 if(mMoveStateChangeListener != null){
@@ -205,12 +204,8 @@ public class TouchCtrl {
         mFps = fps;
     }
 
-    private static final float DEGREE_PER_1000PX = 1.2f;
-    private void fling(float endX, float endY, float vx, float vy){
-        float deltaX = endX - mStartPoint.x;
-        float deltaY = endY - mStartPoint.y;
-//        if(Math.abs(deltaX) < vx) vx = deltaX;
-//        if(Math.abs(deltaY) < vy) vy = deltaY;
+    private static final float DEGREE_PER_1000PX = 0.8f;
+    private void fling(float vx, float vy){
         float absVx = Math.abs(vx);
         float absVy = Math.abs(vy);
         if(absVx > absVy){
@@ -227,7 +222,7 @@ public class TouchCtrl {
         }
     }
 
-    private static final float MIN = 0.2f;
+    private static final float MIN = 0.34f;
     private float step = MIN;
     private Handler mAnimOver = new Handler(){
         @Override
@@ -260,6 +255,8 @@ public class TouchCtrl {
 
     private void removeMsg(){
         step = 0f;
+        mDeltaY = 0;
+        mDeltaX = 0;
         mAnimOver.removeMessages(0);
         if(mMoveStateChangeListener != null) mMoveStateChangeListener.onClear();
     }
